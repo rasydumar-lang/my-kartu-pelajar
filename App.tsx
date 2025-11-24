@@ -250,9 +250,7 @@ function App() {
           {/* Preview Section */}
           <div className="flex flex-col items-center">
             <h2 className="text-xl font-semibold text-gray-700 mb-6">Pratinjau Kartu</h2>
-            <div className="flex justify-center items-start transform scale-90 md:scale-100 origin-top">
-              <StudentIdCard data={cardData} cardRef={cardRef} />
-            </div>
+            <StudentIdCard data={cardData} cardRef={cardRef} />
              <div className="mt-8 w-full max-w-xs flex flex-col gap-4">
                 <button
                     onClick={handleDownloadPdf}

@@ -10,7 +10,7 @@ const StudentIdCard: React.FC<StudentIdCardProps> = ({ data, cardRef }) => {
   return (
     <div 
       ref={cardRef} 
-      className="w-[540px] h-[340px] bg-white rounded-2xl shadow-xl flex flex-col font-sans overflow-hidden"
+      className="w-full max-w-[540px] aspect-[540/340] bg-white rounded-2xl shadow-xl flex flex-col font-sans overflow-hidden"
     >
       {/* Header Section */}
       <header className="bg-blue-900 text-white p-4 flex items-center gap-4">
