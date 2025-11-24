@@ -10,7 +10,7 @@ const StudentIdCard: React.FC<StudentIdCardProps> = ({ data, cardRef }) => {
   return (
     <div 
       ref={cardRef} 
-      className="w-full max-w-[540px] aspect-[540/340] bg-white rounded-2xl shadow-xl flex flex-col font-sans overflow-hidden"
+      className="w-full aspect-[540/340] bg-white rounded-2xl shadow-xl flex flex-col font-sans overflow-hidden"
     >
       {/* Header Section */}
       <header className="bg-blue-900 text-white p-4 flex items-center gap-4">
@@ -23,10 +23,10 @@ const StudentIdCard: React.FC<StudentIdCardProps> = ({ data, cardRef }) => {
         </div>
         <div className="text-left flex-grow min-w-0">
           <p className="text-sm font-semibold text-yellow-300 uppercase tracking-wide">Kartu Tanda Pelajar</p>
-          <h1 className="text-xl font-bold text-white truncate">
+          <h1 className="text-xl font-bold text-white break-words">
             {data.schoolName || 'Nama Sekolah Anda'}
           </h1>
-          <p className="text-xs text-blue-100 truncate">{data.schoolAddress || 'Alamat Sekolah'}</p>
+          <p className="text-xs text-blue-100 break-words">{data.schoolAddress || 'Alamat Sekolah'}</p>
         </div>
       </header>
 
@@ -77,7 +77,7 @@ const StudentIdCard: React.FC<StudentIdCardProps> = ({ data, cardRef }) => {
                   </div>
                    <div className="flex items-start">
                       <p className="font-semibold w-20 text-blue-600">Alamat</p>
-                      <p className="font-mono max-w-[28ch] break-words">: {data.studentAddress || '...'}</p>
+                      <p className="font-mono break-words">: {data.studentAddress || '...'}</p>
                   </div>
               </div>
           </div>
