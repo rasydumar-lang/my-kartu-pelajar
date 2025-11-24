@@ -1,0 +1,5 @@
+{
+  "name": "my Kartu Pelajar",
+  "description": "Aplikasi web untuk membuat dan mengunduh kartu pelajar dengan desain yang profesional dan elegan. Pengguna dapat memasukkan data siswa, mengunggah foto, logo sekolah, dan kode QR, lalu mengunduhnya sebagai file PDF.",
+  "requestFramePermissions": []
+}
