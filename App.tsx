@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef } from 'react';
 import type { CardData } from './types';
 import StudentIdCard from './components/StudentIdCard';
@@ -10,6 +11,8 @@ import { DownloadIcon, WordIcon, PrintIcon } from './components/icons';
 declare const jspdf: any;
 declare const html2canvas: any;
 declare const docx: any;
+
+type PreviewSize = 'sm' | 'md' | 'lg' | 'full';
 
 function App() {
   const [cardData, setCardData] = useState<CardData>({
@@ -36,6 +39,7 @@ function App() {
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [isDownloadingWord, setIsDownloadingWord] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [previewSize, setPreviewSize] = useState<PreviewSize>('full');
 
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -192,6 +196,21 @@ function App() {
         setIsPrinting(false);
     }
   };
+  
+  const sizeClasses: { [key in PreviewSize]: string } = {
+    sm: 'max-w-xs',    // 320px
+    md: 'max-w-sm',    // 384px
+    lg: 'max-w-md',    // 448px
+    full: 'max-w-[540px]', // 540px
+  };
+
+  const getButtonClass = (size: PreviewSize) => {
+    const baseClass = 'px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500';
+    if (previewSize === size) {
+      return `${baseClass} bg-indigo-600 text-white shadow`;
+    }
+    return `${baseClass} bg-white text-gray-700 hover:bg-gray-100 border border-gray-300`;
+  };
 
 
   return (
@@ -249,8 +268,27 @@ function App() {
 
           {/* Preview Section */}
           <div className="flex flex-col items-center">
-            <h2 className="text-xl font-semibold text-gray-700 mb-6">Pratinjau Kartu</h2>
-            <StudentIdCard data={cardData} cardRef={cardRef} />
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">Pratinjau Kartu</h2>
+            
+            <div className="flex justify-center items-center gap-2 mb-4 w-full">
+                {(['sm', 'md', 'lg', 'full'] as PreviewSize[]).map((size) => (
+                    <button
+                        key={size}
+                        onClick={() => setPreviewSize(size)}
+                        className={getButtonClass(size)}
+                    >
+                        {size === 'sm' && 'Kecil'}
+                        {size === 'md' && 'Sedang'}
+                        {size === 'lg' && 'Besar'}
+                        {size === 'full' && 'Ukuran Penuh'}
+                    </button>
+                ))}
+            </div>
+
+            <div className={`w-full transition-all duration-300 ease-in-out ${sizeClasses[previewSize]}`}>
+                <StudentIdCard data={cardData} cardRef={cardRef} />
+            </div>
+
              <div className="mt-8 w-full max-w-xs flex flex-col gap-4">
                 <button
                     onClick={handleDownloadPdf}
@@ -259,7 +297,7 @@ function App() {
                 >
                     {isDownloadingPdf ? (
                         <>
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="http://www.w3.org/2000/svg">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
@@ -280,7 +318,7 @@ function App() {
                 >
                     {isDownloadingWord ? (
                         <>
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="http://www.w3.org/2000/svg">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
@@ -301,7 +339,7 @@ function App() {
                 >
                     {isPrinting ? (
                         <>
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="http://www.w3.org/2000/svg">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
