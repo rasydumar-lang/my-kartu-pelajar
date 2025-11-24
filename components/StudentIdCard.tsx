@@ -8,87 +8,112 @@ interface StudentIdCardProps {
 
 const StudentIdCard: React.FC<StudentIdCardProps> = ({ data, cardRef }) => {
   return (
-    // Card container with gradient background - Adjusted height for correct KTP aspect ratio (85.6 / 53.98 ≈ 1.5857)
-    // 512px / 1.5857 ≈ 323px
     <div 
       ref={cardRef} 
-      className="w-[512px] h-[323px] bg-gradient-to-br from-blue-100 via-white to-cyan-100 rounded-2xl shadow-2xl p-4 flex flex-col font-sans transform scale-90 md:scale-100 origin-top overflow-hidden"
+      className="w-[540px] h-[340px] bg-white rounded-2xl shadow-xl flex flex-col font-sans overflow-hidden"
     >
-      {/* Header with solid color background */}
-      <div className="flex items-center p-3 bg-blue-800 rounded-lg -mt-1 -mx-1">
-        <div className="bg-white p-1 rounded-md">
-            <img
-            src={data.schoolLogo || 'https://via.placeholder.com/50'}
+      {/* Header Section */}
+      <header className="bg-blue-900 text-white p-4 flex items-center gap-4">
+        <div className="w-16 h-16 bg-white p-1 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 shadow-md">
+          <img
+            src={data.schoolLogo || 'https://via.placeholder.com/64'}
             alt="School Logo"
-            className="h-10 w-10 object-contain"
-            />
+            className="h-full w-full object-contain"
+          />
         </div>
-        <div className="text-left ml-3">
-          <p className="text-sm font-semibold text-blue-200 uppercase tracking-wider">Kartu Tanda Pelajar</p>
-          <h1 className="text-lg font-bold text-white leading-tight">
-            {data.schoolName || 'Nama Sekolah'}
+        <div className="text-left flex-grow min-w-0">
+          <p className="text-sm font-semibold text-yellow-300 uppercase tracking-wide">Kartu Tanda Pelajar</p>
+          <h1 className="text-xl font-bold text-white truncate">
+            {data.schoolName || 'Nama Sekolah Anda'}
           </h1>
-          <p className="text-xs text-blue-200 leading-tight">{data.schoolAddress || 'Alamat Sekolah'}</p>
+          <p className="text-xs text-blue-100 truncate">{data.schoolAddress || 'Alamat Sekolah'}</p>
         </div>
-      </div>
+      </header>
 
-      {/* Body */}
-      <div className="flex-grow flex flex-col pt-4">
-        <div className="flex-grow flex gap-4">
-            {/* Left column: Photo */}
-            <div className="flex flex-col justify-start items-center w-36 flex-shrink-0 pl-2">
-                <div className="w-32 h-40 bg-gray-200 rounded-lg overflow-hidden border-4 border-blue-200 shadow-md">
-                    <img
-                        src={data.studentPhoto || 'https://via.placeholder.com/128x160'}
-                        alt="Student"
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-            </div>
+      {/* Main Content */}
+      <main className="relative flex-grow flex items-center p-4 bg-blue-50">
+        
+        {/* Decorative Background Layer */}
+        <div 
+          className="absolute inset-0 z-0 opacity-40" 
+          style={{
+            backgroundImage: 'radial-gradient(circle at top left, rgba(66, 153, 225, 0.25) 0%, transparent 35%), radial-gradient(circle at bottom right, rgba(66, 153, 225, 0.25) 0%, transparent 35%)',
+            backgroundSize: '150px 150px',
+          }}
+        ></div>
 
-            {/* Right column: Details, QR, Signature */}
-            <div className="flex-1 flex flex-col pr-2 pb-1 text-left">
-                {/* Details */}
-                <div className="mt-1">
-                    <h2 className="text-2xl font-bold text-blue-900 leading-tight">{data.studentName || 'Nama Lengkap Siswa'}</h2>
-                    <div className="mt-2 text-sm text-gray-700 space-y-1">
-                      <p><span className="font-semibold w-12 inline-block text-gray-500">NISN</span>: {data.nisn || '0012345678'}</p>
-                      <p><span className="font-semibold w-12 inline-block text-gray-500">Kelas</span>: {data.studentClass || 'XII IPA 1'}</p>
-                      <p><span className="font-semibold w-12 inline-block text-gray-500">Alamat</span>: {data.address || 'Jl. Merdeka No. 123'}</p>
-                    </div>
-                </div>
+        {/* Watermark Layer */}
+        {data.watermark && (
+          <div className="absolute inset-0 flex justify-center items-end p-4 z-0">
+            <img 
+              src={data.watermark} 
+              alt="Watermark" 
+              className="max-h-36 w-auto object-contain opacity-10 pointer-events-none"
+            />
+          </div>
+        )}
 
-                {/* QR and Signature (pushed to bottom) */}
-                <div className="flex-grow flex items-end justify-between gap-4">
-                    {data.qrCode ? (
-                        <div className="w-28 h-28 bg-white rounded-md overflow-hidden p-1 flex justify-center items-center">
-                            <img 
-                                src={data.qrCode}
-                                alt="QR Code"
-                                className="w-full h-full object-contain filter brightness-110 contrast-125"
-                            />
-                        </div>
-                    ) : (
-                        <div className="w-28 h-28 flex-shrink-0"></div> // Placeholder to maintain layout
-                    )}
-                    
-                     <div className="text-center text-xs text-gray-700 w-48">
-                        <p>Mengetahui,</p>
-                        <p>Kepala Sekolah</p>
-                        <div className="h-8"></div>
-                        <p className="font-bold border-b border-gray-700 w-full text-center">{data.principalName || 'Nama Kepala Sekolah'}</p>
-                        <p>NIP. {data.principalNip || '19XXXXXXXX XXXXXX X XXX'}</p>
-                    </div>
-                </div>
-            </div>
+        {/* Content Layer */}
+        <div className="relative z-10 flex items-start gap-4 w-full">
+          <div className="w-28 h-36 bg-gray-200 rounded-lg overflow-hidden border-4 border-white shadow-md flex-shrink-0">
+              <img
+                  src={data.studentPhoto || 'https://via.placeholder.com/112x144'}
+                  alt="Student"
+                  className="w-full h-full object-cover"
+              />
+          </div>
+
+          <div className="flex-1 text-left min-w-0">
+              <h2 className="text-2xl font-bold text-blue-900 leading-tight break-words">{data.studentName || 'Nama Lengkap Siswa'}</h2>
+              
+              <div className="mt-2 space-y-1 text-md text-blue-800">
+                  <div className="flex">
+                      <p className="font-semibold w-20 text-blue-600">Kelas</p>
+                      <p className="font-mono">: {data.studentClass || '...'}</p>
+                  </div>
+                   <div className="flex">
+                      <p className="font-semibold w-20 text-blue-600">NISN</p>
+                      <p className="font-mono">: {data.nisn || '...'}</p>
+                  </div>
+                   <div className="flex items-start">
+                      <p className="font-semibold w-20 text-blue-600">Alamat</p>
+                      <p className="font-mono max-w-[28ch] break-words">: {data.studentAddress || '...'}</p>
+                  </div>
+              </div>
+          </div>
+
+          <div className="w-32 h-32 bg-white p-1 rounded-md flex items-center justify-center flex-shrink-0 self-center">
+            <img
+                src={data.qrCode || 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Example'}
+                alt="QR Code"
+                className="w-full h-full object-contain"
+            />
+          </div>
         </div>
-        {/* Notes section at the bottom of the card */}
-        <div className="px-2">
-          <p className="text-[10px] text-gray-500 italic">
-              <strong>Catatan:</strong> {data.notes || 'Kartu ini milik sekolah dan tidak dapat dipindahtangankan.'}
-          </p>
-        </div>
-      </div>
+      </main>
+      
+      {/* Footer */}
+      <footer className="flex justify-between items-end p-3 text-xs bg-blue-100 text-blue-700">
+          <div className="text-left max-w-[50%]">
+              <p className="font-semibold text-blue-800">Catatan:</p>
+              <p className="whitespace-pre-wrap leading-tight break-words">
+                  {data.notes || 'Berlaku selama menjadi siswa.'}
+              </p>
+          </div>
+          <div className="text-center flex-shrink-0">
+              <p className="mb-1">
+                {data.placeOfIssue || 'Tempat'}, {data.issueDate || 'dd'} {data.issueMonth || 'Bulan'} {data.issueYear || 'yyyy'}
+              </p>
+              <p>Kepala Sekolah</p>
+              <div className="h-8"></div> {/* Signature Space */}
+              <p className="font-bold text-blue-900 underline">
+                  {data.headmasterName || '( Nama Kepala Sekolah )'}
+              </p>
+              <p>
+                  NIP. {data.headmasterNip || '..............................'}
+              </p>
+          </div>
+      </footer>
     </div>
   );
 };

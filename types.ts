@@ -1,14 +1,19 @@
 export interface CardData {
   studentPhoto: string | null;
   schoolLogo: string | null;
-  qrCode: string | null;
   schoolName: string;
   schoolAddress: string;
   studentName: string;
   studentClass: string;
   nisn: string;
-  address: string;
-  principalName: string;
-  principalNip: string;
+  studentAddress: string;
+  headmasterName: string;
+  headmasterNip: string;
   notes: string;
+  qrCode: string | null;
+  watermark: string | null;
+  placeOfIssue: string;
+  issueDate: string;
+  issueMonth: string;
+  issueYear: string;
 }

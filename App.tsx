@@ -4,7 +4,7 @@ import type { CardData } from './types';
 import StudentIdCard from './components/StudentIdCard';
 import TextInput from './components/TextInput';
 import ImageUploader from './components/ImageUploader';
-import { DownloadIcon, WordIcon } from './components/icons';
+import { DownloadIcon, WordIcon, PrintIcon } from './components/icons';
 
 // Declare jsPDF, html2canvas, and docx from global scope
 declare const jspdf: any;
@@ -15,23 +15,30 @@ function App() {
   const [cardData, setCardData] = useState<CardData>({
     studentPhoto: null,
     schoolLogo: null,
-    qrCode: null,
     schoolName: '',
     schoolAddress: '',
     studentName: '',
     studentClass: '',
     nisn: '',
-    address: '',
-    principalName: '',
-    principalNip: '',
-    notes: '',
+    studentAddress: '',
+    headmasterName: '',
+    headmasterNip: '',
+    notes: 'Berlaku selama menjadi siswa.',
+    qrCode: null,
+    watermark: null,
+    placeOfIssue: '',
+    issueDate: '',
+    issueMonth: '',
+    issueYear: '',
   });
 
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [isDownloadingWord, setIsDownloadingWord] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setCardData(prev => ({ ...prev, [name]: value }));
   };
@@ -63,11 +70,10 @@ function App() {
         const cardWidthMm = 85.6;
         const cardHeightMm = 53.98;
 
-        // For landscape, jsPDF swaps width and height, so we pass [height, width]
         const pdf = new jsPDF({
             orientation: 'landscape',
             unit: 'mm',
-            format: [cardHeightMm, cardWidthMm],
+            format: [cardWidthMm, cardHeightMm],
         });
 
         pdf.addImage(imgData, 'PNG', 0, 0, cardWidthMm, cardHeightMm);
@@ -93,13 +99,13 @@ function App() {
         });
 
         const imgData = canvas.toDataURL('image/png');
-        // Extract base64 part
         const base64Data = imgData.split(',')[1];
 
         const { Document, Packer, Paragraph, ImageRun } = docx;
+        
+        const cardWidthPx = 540;
+        const cardHeightPx = 340;
 
-        // Create a new document
-        // Card dimensions: ~512px width in design.
         const doc = new Document({
             sections: [{
                 properties: {},
@@ -109,8 +115,8 @@ function App() {
                             new ImageRun({
                                 data: base64Data,
                                 transformation: {
-                                    width: 512,
-                                    height: 323,
+                                    width: cardWidthPx,
+                                    height: cardHeightPx,
                                 },
                             }),
                         ],
@@ -119,7 +125,6 @@ function App() {
             }],
         });
 
-        // Generate blob and download
         const blob = await Packer.toBlob(doc);
         const fileName = cardData.studentName ? `kartu-pelajar-${cardData.studentName.replace(/\s/g, '_')}.docx` : 'kartu-pelajar.docx';
         
@@ -137,6 +142,54 @@ function App() {
         alert("Gagal membuat Word. Pastikan koneksi internet lancar untuk memuat library.");
     } finally {
         setIsDownloadingWord(false);
+    }
+  };
+
+  const handlePrint = async () => {
+    if (!cardRef.current) return;
+    setIsPrinting(true);
+
+    try {
+        const canvas = await html2canvas(cardRef.current, {
+            scale: 3,
+            useCORS: true,
+            backgroundColor: null,
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const printWindow = window.open('', '_blank');
+        
+        if (printWindow) {
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Cetak Kartu Pelajar</title>
+                        <style>
+                            @page { size: auto; margin: 0; }
+                            body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+                            img { max-width: 100%; max-height: 100%; object-fit: contain; }
+                        </style>
+                    </head>
+                    <body>
+                        <img src="${imgData}" />
+                        <script>
+                            window.onload = () => {
+                                window.print();
+                                setTimeout(() => window.close(), 100); // Close after print dialog
+                            };
+                        </script>
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+        } else {
+            alert("Gagal membuka jendela cetak. Pastikan pop-up diizinkan untuk situs ini.");
+        }
+    } catch (error) {
+        console.error("Error printing:", error);
+        alert("Gagal menyiapkan kartu untuk dicetak. Silakan coba lagi.");
+    } finally {
+        setIsPrinting(false);
     }
   };
 
@@ -158,34 +211,52 @@ function App() {
             <h2 className="text-xl font-semibold text-gray-700 mb-6">Isi Data Kartu</h2>
             <div className="space-y-4">
               <TextInput label="Nama Sekolah" name="schoolName" value={cardData.schoolName} onChange={handleTextChange} placeholder="Contoh: SMA Negeri 1 Jakarta" />
-              <TextInput label="Alamat Sekolah" name="schoolAddress" value={cardData.schoolAddress} onChange={handleTextChange} placeholder="Contoh: Jl. Budi Utomo No.7, Jakarta Pusat" />
+              <TextInput label="Alamat Sekolah" name="schoolAddress" value={cardData.schoolAddress} onChange={handleTextChange} placeholder="Contoh: Jl. Jenderal Sudirman No. 1" />
               <TextInput label="Nama Lengkap Siswa" name="studentName" value={cardData.studentName} onChange={handleTextChange} placeholder="Contoh: Budi Santoso" />
               <TextInput label="Kelas" name="studentClass" value={cardData.studentClass} onChange={handleTextChange} placeholder="Contoh: XII IPA 1" />
               <TextInput label="NISN" name="nisn" value={cardData.nisn} onChange={handleTextChange} placeholder="Contoh: 0012345678" />
-              <TextInput label="Alamat" name="address" value={cardData.address} onChange={handleTextChange} placeholder="Contoh: Jl. Merdeka No. 123" />
-              <div className="grid md:grid-cols-2 gap-4">
-                <ImageUploader label="Upload Logo Sekolah" name="schoolLogo" previewUrl={cardData.schoolLogo} onChange={handleImageChange} />
-                <ImageUploader label="Upload Foto Siswa" name="studentPhoto" previewUrl={cardData.studentPhoto} onChange={handleImageChange} />
+              <TextInput label="Alamat Siswa" name="studentAddress" value={cardData.studentAddress} onChange={handleTextChange} placeholder="Contoh: Jl. Merdeka No. 10, Jakarta" />
+              <TextInput label="Nama Kepala Sekolah" name="headmasterName" value={cardData.headmasterName} onChange={handleTextChange} placeholder="Contoh: Drs. H. Muhammad, M.Pd" />
+              <TextInput label="NIP Kepala Sekolah" name="headmasterNip" value={cardData.headmasterNip} onChange={handleTextChange} placeholder="Contoh: 196801011994031009" />
+              <TextInput label="Tempat Cetak" name="placeOfIssue" value={cardData.placeOfIssue} onChange={handleTextChange} placeholder="Contoh: Jakarta" />
+              <div className="grid grid-cols-3 gap-4">
+                <TextInput label="Tanggal" name="issueDate" value={cardData.issueDate} onChange={handleTextChange} placeholder="Contoh: 28" />
+                <TextInput label="Bulan" name="issueMonth" value={cardData.issueMonth} onChange={handleTextChange} placeholder="Contoh: Oktober" />
+                <TextInput label="Tahun" name="issueYear" value={cardData.issueYear} onChange={handleTextChange} placeholder="Contoh: 2024" />
               </div>
-              <ImageUploader label="Upload QR Code" name="qrCode" previewUrl={cardData.qrCode} onChange={handleImageChange} />
-              <hr className="my-4"/>
-              <TextInput label="Nama Kepala Sekolah" name="principalName" value={cardData.principalName} onChange={handleTextChange} placeholder="Contoh: Dr. H. Susilo, M.Pd" />
-              <TextInput label="NIP Kepala Sekolah" name="principalNip" value={cardData.principalNip} onChange={handleTextChange} placeholder="Contoh: 196501011990031001" />
-              <TextInput label="Catatan" name="notes" value={cardData.notes} onChange={handleTextChange} placeholder="Contoh: Kartu ini tidak dapat dipindahtangankan" />
+               <div>
+                <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+                  Catatan
+                </label>
+                <textarea
+                  id="notes"
+                  name="notes"
+                  value={cardData.notes}
+                  onChange={handleTextChange}
+                  placeholder="Contoh: Berlaku selama menjadi siswa."
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4 pt-2">
+                <ImageUploader label="Upload Logo Sekolah" name="schoolLogo" previewUrl={cardData.schoolLogo} onChange={handleImageChange} />
+                <ImageUploader label="Upload Foto Siswa (3x4)" name="studentPhoto" previewUrl={cardData.studentPhoto} onChange={handleImageChange} />
+                <ImageUploader label="Upload QR Code" name="qrCode" previewUrl={cardData.qrCode} onChange={handleImageChange} />
+                <ImageUploader label="Upload Watermark" name="watermark" previewUrl={cardData.watermark} onChange={handleImageChange} />
+              </div>
             </div>
           </div>
 
           {/* Preview Section */}
           <div className="flex flex-col items-center">
-            <h2 className="text-xl font-semibold text-gray-700 mb-6">Pratinjai Kartu</h2>
-            <div className="flex justify-center items-start">
+            <h2 className="text-xl font-semibold text-gray-700 mb-6">Pratinjau Kartu</h2>
+            <div className="flex justify-center items-start transform scale-90 md:scale-100 origin-top">
               <StudentIdCard data={cardData} cardRef={cardRef} />
             </div>
              <div className="mt-8 w-full max-w-xs flex flex-col gap-4">
-                {/* PDF Button */}
                 <button
                     onClick={handleDownloadPdf}
-                    disabled={isDownloadingPdf || isDownloadingWord}
+                    disabled={isDownloadingPdf || isDownloadingWord || isPrinting}
                     className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-colors w-full"
                 >
                     {isDownloadingPdf ? (
@@ -204,10 +275,9 @@ function App() {
                     )}
                 </button>
 
-                {/* Word Button */}
                 <button
                     onClick={handleDownloadWord}
-                    disabled={isDownloadingPdf || isDownloadingWord}
+                    disabled={isDownloadingPdf || isDownloadingWord || isPrinting}
                     className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors w-full"
                 >
                     {isDownloadingWord ? (
@@ -222,6 +292,27 @@ function App() {
                         <>
                             <WordIcon />
                             Unduh Kartu (Word)
+                        </>
+                    )}
+                </button>
+                
+                <button
+                    onClick={handlePrint}
+                    disabled={isDownloadingPdf || isDownloadingWord || isPrinting}
+                    className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-green-300 disabled:cursor-not-allowed transition-colors w-full"
+                >
+                    {isPrinting ? (
+                        <>
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Mencetak...
+                        </>
+                    ) : (
+                        <>
+                            <PrintIcon />
+                            Cetak Kartu
                         </>
                     )}
                 </button>
